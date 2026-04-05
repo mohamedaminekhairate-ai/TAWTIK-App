@@ -1,0 +1,58 @@
+{
+  "DGI": [
+    { "id": 1, "dossier_repertoir": "REP-2026-001", "montant_affaire": 350000.00, "montant_enregistrement": 21000.00, "date_envoie": "2026-01-05", "state": "Validé" },
+    { "id": 2, "dossier_repertoir": "REP-2026-002", "montant_affaire": 820000.00, "montant_enregistrement": 49200.00, "date_envoie": "2026-01-10", "state": "Envoyé" },
+    { "id": 3, "dossier_repertoir": "REP-2026-003", "montant_affaire": 150000.00, "montant_enregistrement": 9000.00,  "date_envoie": null,         "state": "Brouillon" },
+    { "id": 4, "dossier_repertoir": "REP-2026-004", "montant_affaire": 1200000.00,"montant_enregistrement": 72000.00, "date_envoie": "2026-01-18", "state": "Validé" },
+    { "id": 5, "dossier_repertoir": "REP-2026-005", "montant_affaire": 430000.00, "montant_enregistrement": 25800.00, "date_envoie": "2026-01-22", "state": "Annulé" },
+    { "id": 6, "dossier_repertoir": "REP-2025-088", "montant_affaire": 275000.00, "montant_enregistrement": 16500.00, "date_envoie": "2025-12-15", "state": "Cloturé" },
+    { "id": 7, "dossier_repertoir": "REP-2025-087", "montant_affaire": 640000.00, "montant_enregistrement": 38400.00, "date_envoie": "2025-12-08", "state": "Validé" },
+    { "id": 8, "dossier_repertoir": "REP-2025-086", "montant_affaire": 95000.00,  "montant_enregistrement": 5700.00,  "date_envoie": null,         "state": "Brouillon" },
+    { "id": 9, "dossier_repertoir": "REP-2025-085", "montant_affaire": 1800000.00,"montant_enregistrement": 108000.00,"date_envoie": "2025-11-30", "state": "Cloturé" },
+    { "id": 10,"dossier_repertoir": "REP-2025-084", "montant_affaire": 310000.00, "montant_enregistrement": 18600.00, "date_envoie": "2025-11-20", "state": "Envoyé" },
+    { "id": 11,"dossier_repertoir": "REP-2025-083", "montant_affaire": 520000.00, "montant_enregistrement": 31200.00, "date_envoie": "2025-11-05", "state": "Annulé" },
+    { "id": 12,"dossier_repertoir": "REP-2025-082", "montant_affaire": 88000.00,  "montant_enregistrement": 5280.00,  "date_envoie": "2025-10-28", "state": "Validé" },
+    { "id": 13,"dossier_repertoir": "REP-2025-081", "montant_affaire": 2100000.00,"montant_enregistrement": 126000.00,"date_envoie": "2025-10-15", "state": "Cloturé" }
+  ],
+
+  "TGR": [
+    { "id": 1,  "numeroDemande": "TGR-2026-00201", "dossier_repertoir": "REP-2026-001", "article_thsc": "ART-THSC-2200", "date_envoie": "2026-01-06", "state": "valide" },
+    { "id": 2,  "numeroDemande": "TGR-2026-00198", "dossier_repertoir": "REP-2026-002", "article_thsc": "ART-THSC-2201", "date_envoie": "2026-01-11", "state": "envoye" },
+    { "id": 3,  "numeroDemande": "TGR-2026-00175", "dossier_repertoir": "REP-2026-003", "article_thsc": "ART-THSC-2202", "date_envoie": null,         "state": "bruillon" },
+    { "id": 4,  "numeroDemande": "TGR-2026-00160", "dossier_repertoir": "REP-2026-004", "article_thsc": "ART-THSC-2203", "date_envoie": "2026-01-19", "state": "valide" },
+    { "id": 5,  "numeroDemande": "TGR-2026-00144", "dossier_repertoir": "REP-2026-005", "article_thsc": "ART-THSC-2204", "date_envoie": "2026-01-23", "state": "annule" },
+    { "id": 6,  "numeroDemande": "TGR-2025-01088", "dossier_repertoir": "REP-2025-088", "article_thsc": "ART-THSC-2150", "date_envoie": "2025-12-16", "state": "cloture" },
+    { "id": 7,  "numeroDemande": "TGR-2025-01044", "dossier_repertoir": "REP-2025-087", "article_thsc": "ART-THSC-2148", "date_envoie": "2025-12-09", "state": "expediton_envoye" },
+    { "id": 8,  "numeroDemande": "TGR-2025-00998", "dossier_repertoir": "REP-2025-086", "article_thsc": "ART-THSC-2145", "date_envoie": null,         "state": "bruillon" },
+    { "id": 9,  "numeroDemande": "TGR-2025-00950", "dossier_repertoir": "REP-2025-085", "article_thsc": "ART-THSC-2140", "date_envoie": "2025-12-01", "state": "cloture" },
+    { "id": 10, "numeroDemande": "TGR-2025-00910", "dossier_repertoir": "REP-2025-084", "article_thsc": "ART-THSC-2138", "date_envoie": "2025-11-21", "state": "envoye" },
+    { "id": 11, "numeroDemande": "TGR-2025-00875", "dossier_repertoir": "REP-2025-083", "article_thsc": "ART-THSC-2135", "date_envoie": "2025-11-06", "state": "annule" },
+    { "id": 12, "numeroDemande": "TGR-2025-00840", "dossier_repertoir": "REP-2025-082", "article_thsc": "ART-THSC-2130", "date_envoie": "2025-10-29", "state": "valide" },
+    { "id": 13, "numeroDemande": "TGR-2025-00801", "dossier_repertoir": "REP-2025-081", "article_thsc": "ART-THSC-2128", "date_envoie": "2025-10-16", "state": "expediton_envoye" },
+    { "id": 14, "numeroDemande": "TGR-2025-00770", "dossier_repertoir": "REP-2025-080", "article_thsc": "ART-THSC-2125", "date_envoie": "2025-10-02", "state": "cloture" }
+  ],
+
+  "DAAMSAKAN": [
+    { "id": 1,  "demande_ref": "DAM-2026-1001", "nom_beneficier": "Hassan Idrissi",         "namepromoteur": "Addoha",          "state": "valider" },
+    { "id": 2,  "demande_ref": "DAM-2026-1002", "nom_beneficier": "Fatima Zahra Ouali",     "namepromoteur": "CGI",             "state": "aide_recu" },
+    { "id": 3,  "demande_ref": "DAM-2026-1003", "nom_beneficier": "Youssef Berrada",        "namepromoteur": "Alliances",       "state": "Brouillon" },
+    { "id": 4,  "demande_ref": "DAM-2026-1004", "nom_beneficier": "Khadija Moussaoui",      "namepromoteur": "Douja Promotion", "state": "en_cours" },
+    { "id": 5,  "demande_ref": "DAM-2026-1005", "nom_beneficier": "Mohamed Amine Lahlou",   "namepromoteur": "Addoha",          "state": "Affecter" },
+    { "id": 6,  "demande_ref": "DAM-2025-0988", "nom_beneficier": "Aicha Bensalah",         "namepromoteur": "CGI",             "state": "rejeter" },
+    { "id": 7,  "demande_ref": "DAM-2025-0975", "nom_beneficier": "Abdelilah Rhazi",        "namepromoteur": "Tgcc Immobilier", "state": "Clôturée" },
+    { "id": 8,  "demande_ref": "DAM-2025-0960", "nom_beneficier": "Nadia Ould Braham",      "namepromoteur": "Alliances",       "state": "revision" },
+    { "id": 9,  "demande_ref": "DAM-2025-0944", "nom_beneficier": "Rachid El Mansouri",     "namepromoteur": "Addoha",          "state": "aide_recu" },
+    { "id": 10, "demande_ref": "DAM-2025-0930", "nom_beneficier": "Zineb Hamdaoui",         "namepromoteur": "Douja Promotion", "state": "valider" },
+    { "id": 11, "demande_ref": "DAM-2025-0915", "nom_beneficier": "Brahim Ouazzani",        "namepromoteur": "CGI",             "state": "demande_restituion" },
+    { "id": 12, "demande_ref": "DAM-2025-0901", "nom_beneficier": "Siham Bekkali",          "namepromoteur": "Tgcc Immobilier", "state": "restituion_valider" },
+    { "id": 13, "demande_ref": "DAM-2025-0888", "nom_beneficier": "Omar Bensouda",          "namepromoteur": "Alliances",       "state": "expire" },
+    { "id": 14, "demande_ref": "DAM-2025-0872", "nom_beneficier": "Houda El Alaoui",        "namepromoteur": "Addoha",          "state": "Annuler" },
+    { "id": 15, "demande_ref": "DAM-2025-0855", "nom_beneficier": "Tariq Benjelloun",       "namepromoteur": "Douja Promotion", "state": "demande_cloture" }
+  ],
+
+  "_states_reference": {
+    "DGI":      ["Brouillon", "Envoyé", "Validé", "Annulé", "Cloturé"],
+    "TGR":      ["bruillon", "envoye", "valide", "annule", "cloture", "expediton_envoye"],
+    "DAAMSAKAN":["Brouillon","Affecter","en_cours","valider","aide_recu","revision","rejeter","demande_restituion","demande_cloture","restituion_effectuer","cloture_rejeter","Clôturée","restituion_valider","Annuler","expire"]
+  }
+}

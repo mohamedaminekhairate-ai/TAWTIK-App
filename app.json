@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "Project_test",
-    "slug": "Project_test",
+    "name": "TAWTIK",
+    "slug": "tawtik",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "projecttest",
+    "icon": "./assets/images/tawtik-logo.png",
+    "scheme": "tawtik",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/splash-icon.png",
+      "image": "./assets/images/tawtik-logo.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#1a3050"
     },
     "ios": {
       "supportsTablet": true

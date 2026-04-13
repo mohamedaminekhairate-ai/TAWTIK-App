@@ -1,94 +1,76 @@
-import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { useState } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, LayoutAnimation, Platform, UIManager } from 'react-native';
+
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
+}
 import { Ionicons } from '@expo/vector-icons';
+import { useAuth } from '../../components/AuthContext';
 
-const notificationsData = [
-  {
-    id: '1',
-    title: 'Nouveau dossier ajouté',
-    description: 'Le dossier de M. Haddad a été créé avec succès.',
-    time: 'Il y a 10 min',
-    unread: true,
-    icon: 'folder-open',
-    iconColor: '#4361ee',
-  },
-  {
-    id: '2',
-    title: 'Incident urgent',
-    description: 'Serveur principal hors ligne. Veuillez vérifier immédiatement.',
-    time: 'Il y a 1 heure',
-    unread: true,
-    icon: 'warning',
-    iconColor: '#f72585',
-  },
-  {
-    id: '3',
-    title: 'Sakam approuvé',
-    description: 'Votre demande Sakam #4029 a été approuvée par le responsable.',
-    time: 'Hier, 14:30',
-    unread: false,
-    icon: 'checkmark-circle',
-    iconColor: '#2ec4b6',
-  },
-  {
-    id: '4',
-    title: 'Alerte de sécurité',
-    description: 'Nouvelle connexion détectée sur un appareil non reconnu.',
-    time: 'Hier, 09:15',
-    unread: false,
-    icon: 'shield-alert',
-    iconColor: '#ff9f1c',
-  },
-  {
-    id: '5',
-    title: 'Mise à jour système',
-    description: 'La version 2.4.0 est prête à être installée.',
-    time: 'Mar',
-    unread: false,
-    icon: 'cloud-download',
-    iconColor: '#7209b7',
-  },
-  {
-    id: '6',
-    title: 'Message du support',
-    description: 'Votre ticket #992 a été résolu. Merci de votre patience.',
-    time: 'Lun',
-    unread: true,
-    icon: 'chatbubble-ellipses',
-    iconColor: '#2ec4b6',
-  },
-];
+function formatDate(dateStr) {
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffH = Math.floor(diffMs / (1000 * 60 * 60));
+  if (diffH < 1) return "À l'instant";
+  if (diffH < 24) return `Il y a ${diffH}h`;
+  const diffD = Math.floor(diffH / 24);
+  if (diffD === 1) return 'Hier';
+  if (diffD < 7) return `Il y a ${diffD} jours`;
+  return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
+}
 
-function NotificationItem({ title, description, time, unread, icon, iconColor }) {
+function NotificationItem({ titre, message, date, unread, icon, iconColor }) {
+  const [expanded, setExpanded] = useState(false);
+
+  const toggleExpand = () => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded(!expanded);
+  };
+
   return (
-    <TouchableOpacity style={[styles.notificationItem, unread && styles.unreadItem]}>
+    <TouchableOpacity 
+      style={[styles.notificationItem, unread && styles.unreadItem, expanded && styles.expandedItem]}
+      activeOpacity={0.7}
+      onPress={toggleExpand}
+    >
       <View style={[styles.iconContainer, { backgroundColor: iconColor + '15' }]}>
         <Ionicons name={icon} size={24} color={iconColor} />
       </View>
       <View style={styles.notificationContent}>
         <View style={styles.notificationHeader}>
-          <Text style={[styles.titleText, unread && styles.unreadText]} numberOfLines={1}>
-            {title}
+          <Text style={[styles.titleText, unread && styles.unreadText]} numberOfLines={expanded ? undefined : 1}>
+            {titre}
           </Text>
-          <Text style={styles.timeText}>{time}</Text>
+          <Text style={styles.timeText}>{formatDate(date)}</Text>
         </View>
-        <Text style={styles.descriptionText} numberOfLines={2}>
-          {description}
+        <Text style={[styles.descriptionText, expanded && { color: '#1f2937' }]} numberOfLines={expanded ? undefined : 2}>
+          {message}
         </Text>
       </View>
-      {unread && <View style={styles.unreadDot} />}
+      {unread && !expanded && <View style={styles.unreadDot} />}
+      <Ionicons 
+        name={expanded ? "chevron-up" : "chevron-down"} 
+        size={16} 
+        color="#9ca3af" 
+        style={{ marginTop: 4 }} 
+      />
     </TouchableOpacity>
   );
 }
 
 export default function NotificationsScreen() {
+  const { notifications } = useAuth();
+  const unreadCount = notifications.filter((n) => n.unread).length;
+
   return (
     <View style={styles.container}>
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Notifications</Text>
-        <Text style={styles.headerCount}>{notificationsData.filter((n) => n.unread).length} non lues</Text>
+        <Text style={styles.headerCount}>{unreadCount} non lues</Text>
       </View>
       <FlatList
-        data={notificationsData}
+        data={notifications}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => <NotificationItem {...item} />}
         contentContainerStyle={styles.listContent}
@@ -130,10 +112,17 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   unreadItem: {
-    backgroundColor: '#f8f9fa',
+    backgroundColor: '#f0fdf4',
     marginHorizontal: -12,
     paddingHorizontal: 12,
     borderRadius: 12,
+  },
+  expandedItem: {
+    backgroundColor: '#f8fafc',
+    marginHorizontal: -12,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+    paddingBottom: 20,
   },
   iconContainer: {
     width: 48,

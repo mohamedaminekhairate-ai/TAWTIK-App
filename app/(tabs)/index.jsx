@@ -1,30 +1,42 @@
-import { AlertTriangle, Bell, CheckCircle2, Clock3, TrendingUp } from 'lucide-react-native';
-import { useCallback, useMemo, useState } from 'react';
+import { AlertTriangle, Bell, CheckCircle2, Clock3, TrendingUp, FileText, Wallet, Landmark } from 'lucide-react-native';
+import { Ionicons } from '@expo/vector-icons';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import {
+  Animated,
   Image,
   RefreshControl,
   ScrollView,
   StatusBar,
   StyleSheet, Text,
-  TouchableOpacity, View
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+  Dimensions
 } from 'react-native';
-import { PieChart } from 'react-native-gifted-charts';
+import { useRouter } from 'expo-router';
+import { PieChart, LineChart, BarChart } from 'react-native-gifted-charts';
+import { LinearGradient } from 'expo-linear-gradient';
+import { useAuth } from '../../components/AuthContext';
+import realData from '../../tawtik_api_v2.json';
 
 // ─── PALETTE ───────────────────────────────────────────────────────────────
 const C = {
   navy: '#1a2e44',
   navyMid: '#2d4a6e',
   navyLight: '#3d6795',
-  success: '#2a9d6e',
-  successBg: '#e8f7f2',
+  gold: '#b8922a',
+  goldLight: '#d4a843',
+  success: '#27ae60',
+  successBg: '#eafaf1',
   successText: '#1a6a47',
-  warn: '#e07b2a',
-  warnBg: '#fef3e7',
+  warn: '#f39c12',
+  warnBg: '#fef9e7',
   warnText: '#a05515',
-  danger: '#c0392b',
-  dangerBg: '#fdecea',
+  danger: '#e74c3c',
+  dangerBg: '#fdedec',
   dangerText: '#8b1a1a',
-  bg: '#f5f7fa',
+  teal: '#1abc9c',
+  bg: '#f0f3f8',
   surface: '#ffffff',
   surface2: '#f0f4f8',
   text: '#1a2033',
@@ -36,58 +48,6 @@ const C = {
 const SUCCESS_STATES = ['Validé', 'Cloturé', 'valide', 'valider', 'cloture', 'Clôturée', 'restituion_valider', 'aide_recu', 'restituion_effectuer'];
 const PENDING_STATES = ['Brouillon', 'bruillon', 'Envoyé', 'envoye', 'en_cours', 'Affecter', 'revision', 'expediton_envoye', 'demande_restituion', 'demande_cloture'];
 const ALERT_STATES = ['Annulé', 'annule', 'rejeter', 'expire', 'Annuler', 'cloture_rejeter'];
-
-// ─── MOCK DATA ──────────────────────────────────────────────────────────────
-const MOCK_DATA = {
-  DGI: [
-    { id: 1, dossier_repertoir: 'REP-2026-001', montant_affaire: 350000, montant_enregistrement: 21000, date_envoie: '2026-01-05', state: 'Validé' },
-    { id: 2, dossier_repertoir: 'REP-2026-002', montant_affaire: 820000, montant_enregistrement: 49200, date_envoie: '2026-01-10', state: 'Envoyé' },
-    { id: 3, dossier_repertoir: 'REP-2026-003', montant_affaire: 150000, montant_enregistrement: 9000, date_envoie: null, state: 'Brouillon' },
-    { id: 4, dossier_repertoir: 'REP-2026-004', montant_affaire: 1200000, montant_enregistrement: 72000, date_envoie: '2026-01-18', state: 'Validé' },
-    { id: 5, dossier_repertoir: 'REP-2026-005', montant_affaire: 430000, montant_enregistrement: 25800, date_envoie: '2026-01-22', state: 'Annulé' },
-    { id: 6, dossier_repertoir: 'REP-2025-088', montant_affaire: 275000, montant_enregistrement: 16500, date_envoie: '2025-12-15', state: 'Cloturé' },
-    { id: 7, dossier_repertoir: 'REP-2025-087', montant_affaire: 640000, montant_enregistrement: 38400, date_envoie: '2025-12-08', state: 'Validé' },
-    { id: 8, dossier_repertoir: 'REP-2025-086', montant_affaire: 95000, montant_enregistrement: 5700, date_envoie: null, state: 'Brouillon' },
-    { id: 9, dossier_repertoir: 'REP-2025-085', montant_affaire: 1800000, montant_enregistrement: 108000, date_envoie: '2025-11-30', state: 'Cloturé' },
-    { id: 10, dossier_repertoir: 'REP-2025-084', montant_affaire: 310000, montant_enregistrement: 18600, date_envoie: '2025-11-20', state: 'Envoyé' },
-    { id: 11, dossier_repertoir: 'REP-2025-083', montant_affaire: 520000, montant_enregistrement: 31200, date_envoie: '2025-11-05', state: 'Annulé' },
-    { id: 12, dossier_repertoir: 'REP-2025-082', montant_affaire: 88000, montant_enregistrement: 5280, date_envoie: '2025-10-28', state: 'Validé' },
-    { id: 13, dossier_repertoir: 'REP-2025-081', montant_affaire: 2100000, montant_enregistrement: 126000, date_envoie: '2025-10-15', state: 'Cloturé' },
-  ],
-  TGR: [
-    { id: 1, numeroDemande: 'TGR-2026-00201', dossier_repertoir: 'REP-2026-001', date_envoie: '2026-01-06', state: 'valide' },
-    { id: 2, numeroDemande: 'TGR-2026-00198', dossier_repertoir: 'REP-2026-002', date_envoie: '2026-01-11', state: 'envoye' },
-    { id: 3, numeroDemande: 'TGR-2026-00175', dossier_repertoir: 'REP-2026-003', date_envoie: null, state: 'bruillon' },
-    { id: 4, numeroDemande: 'TGR-2026-00160', dossier_repertoir: 'REP-2026-004', date_envoie: '2026-01-19', state: 'valide' },
-    { id: 5, numeroDemande: 'TGR-2026-00144', dossier_repertoir: 'REP-2026-005', date_envoie: '2026-01-23', state: 'annule' },
-    { id: 6, numeroDemande: 'TGR-2025-01088', dossier_repertoir: 'REP-2025-088', date_envoie: '2025-12-16', state: 'cloture' },
-    { id: 7, numeroDemande: 'TGR-2025-01044', dossier_repertoir: 'REP-2025-087', date_envoie: '2025-12-09', state: 'expediton_envoye' },
-    { id: 8, numeroDemande: 'TGR-2025-00998', dossier_repertoir: 'REP-2025-086', date_envoie: null, state: 'bruillon' },
-    { id: 9, numeroDemande: 'TGR-2025-00950', dossier_repertoir: 'REP-2025-085', date_envoie: '2025-12-01', state: 'cloture' },
-    { id: 10, numeroDemande: 'TGR-2025-00910', dossier_repertoir: 'REP-2025-084', date_envoie: '2025-11-21', state: 'envoye' },
-    { id: 11, numeroDemande: 'TGR-2025-00875', dossier_repertoir: 'REP-2025-083', date_envoie: '2025-11-06', state: 'annule' },
-    { id: 12, numeroDemande: 'TGR-2025-00840', dossier_repertoir: 'REP-2025-082', date_envoie: '2025-10-29', state: 'valide' },
-    { id: 13, numeroDemande: 'TGR-2025-00801', dossier_repertoir: 'REP-2025-081', date_envoie: '2025-10-16', state: 'expediton_envoye' },
-    { id: 14, numeroDemande: 'TGR-2025-00770', dossier_repertoir: 'REP-2025-080', date_envoie: '2025-10-02', state: 'cloture' },
-  ],
-  DAAMSAKAN: [
-    { id: 1, demande_ref: 'DAM-2026-1001', nom_beneficier: 'Hassan Idrissi', namepromoteur: 'Addoha', state: 'valider' },
-    { id: 2, demande_ref: 'DAM-2026-1002', nom_beneficier: 'Fatima Zahra Ouali', namepromoteur: 'CGI', state: 'aide_recu' },
-    { id: 3, demande_ref: 'DAM-2026-1003', nom_beneficier: 'Youssef Berrada', namepromoteur: 'Alliances', state: 'Brouillon' },
-    { id: 4, demande_ref: 'DAM-2026-1004', nom_beneficier: 'Khadija Moussaoui', namepromoteur: 'Douja Promotion', state: 'en_cours' },
-    { id: 5, demande_ref: 'DAM-2026-1005', nom_beneficier: 'Mohamed Amine Lahlou', namepromoteur: 'Addoha', state: 'Affecter' },
-    { id: 6, demande_ref: 'DAM-2025-0988', nom_beneficier: 'Aicha Bensalah', namepromoteur: 'CGI', state: 'rejeter' },
-    { id: 7, demande_ref: 'DAM-2025-0975', nom_beneficier: 'Abdelilah Rhazi', namepromoteur: 'Tgcc Immobilier', state: 'Clôturée' },
-    { id: 8, demande_ref: 'DAM-2025-0960', nom_beneficier: 'Nadia Ould Braham', namepromoteur: 'Alliances', state: 'revision' },
-    { id: 9, demande_ref: 'DAM-2025-0944', nom_beneficier: 'Rachid El Mansouri', namepromoteur: 'Addoha', state: 'aide_recu' },
-    { id: 10, demande_ref: 'DAM-2025-0930', nom_beneficier: 'Zineb Hamdaoui', namepromoteur: 'Douja Promotion', state: 'valider' },
-    { id: 11, demande_ref: 'DAM-2025-0915', nom_beneficier: 'Brahim Ouazzani', namepromoteur: 'CGI', state: 'demande_restituion' },
-    { id: 12, demande_ref: 'DAM-2025-0901', nom_beneficier: 'Siham Bekkali', namepromoteur: 'Tgcc Immobilier', state: 'restituion_valider' },
-    { id: 13, demande_ref: 'DAM-2025-0888', nom_beneficier: 'Omar Bensouda', namepromoteur: 'Alliances', state: 'expire' },
-    { id: 14, demande_ref: 'DAM-2025-0872', nom_beneficier: 'Houda El Alaoui', namepromoteur: 'Addoha', state: 'Annuler' },
-    { id: 15, demande_ref: 'DAM-2025-0855', nom_beneficier: 'Tariq Benjelloun', namepromoteur: 'Douja Promotion', state: 'demande_cloture' },
-  ],
-};
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────
 function classify(state) {
@@ -111,143 +71,477 @@ function fmtAmount(n) {
   return String(n);
 }
 
-// ─── SUB-COMPONENTS ─────────────────────────────────────────────────────────
+// ─── HOOK: scale press ───────────────────────────────────────────────────────
+function usePressScale(toScale = 0.97) {
+  const scale = useRef(new Animated.Value(1)).current;
+  const onPressIn = () =>
+    Animated.spring(scale, { toValue: toScale, useNativeDriver: true, speed: 50, bounciness: 4 }).start();
+  const onPressOut = () =>
+    Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 20, bounciness: 6 }).start();
+  return { scale, onPressIn, onPressOut };
+}
 
-/** KPI Card */
-function KpiCard({ icon, count, label, accentColor, bgColor }) {
+// ─── ANIMATED CARD ──────────────────────────────────────────────────────────
+function AnimatedCard({ children, delay = 0, pressable = false, style }) {
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(22)).current;
+  const { scale, onPressIn, onPressOut } = usePressScale(0.975);
+
+  const hasRun = useRef(false);
+  if (!hasRun.current) {
+    hasRun.current = true;
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 420, delay, useNativeDriver: true }),
+      Animated.spring(translateY, { toValue: 0, delay, useNativeDriver: true, speed: 13, bounciness: 5 }),
+    ]).start();
+  }
+
+  const animStyle = [
+    style,
+    { opacity, transform: [{ translateY }, ...(pressable ? [{ scale }] : [])] },
+  ];
+
+  if (!pressable) return <Animated.View style={animStyle}>{children}</Animated.View>;
+
   return (
-    <View style={[s.kpiCard, { borderTopColor: accentColor }]}>
-      <View style={[s.kpiIconWrap, { backgroundColor: bgColor }]}>{icon}</View>
-      <Text style={s.kpiCount}>{count}</Text>
-      <Text style={s.kpiLabel}>{label}</Text>
-    </View>
+    <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
+      <Animated.View style={animStyle}>{children}</Animated.View>
+    </TouchableWithoutFeedback>
   );
 }
 
-/** Stacked horizontal bar for institutions */
-function InstBar({ name, stats }) {
-  const total = stats.t || 1;
+// ─── SUB-COMPONENTS ─────────────────────────────────────────────────────────
+
+/** KPI Card — with prominent icon */
+function KpiCard({ icon, count, label, gradColors, accentColor, delay = 0 }) {
+  const { scale, onPressIn, onPressOut } = usePressScale(0.94);
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(18)).current;
+
+  const hasRun = useRef(false);
+  if (!hasRun.current) {
+    hasRun.current = true;
+    Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 400, delay, useNativeDriver: true }),
+      Animated.spring(translateY, { toValue: 0, delay, useNativeDriver: true, speed: 14, bounciness: 5 }),
+    ]).start();
+  }
+
   return (
-    <View style={s.instRow}>
-      <View style={s.instMeta}>
-        <Text style={s.instName}>{name}</Text>
-        <Text style={s.instTotal}>{stats.t} dossiers</Text>
-      </View>
-      <View style={s.instTrack}>
-        {stats.s > 0 && <View style={[s.instSeg, { flex: stats.s, backgroundColor: C.success }]} />}
-        {stats.p > 0 && <View style={[s.instSeg, { flex: stats.p, backgroundColor: C.warn }]} />}
-        {stats.d > 0 && <View style={[s.instSeg, { flex: stats.d, backgroundColor: C.danger }]} />}
-      </View>
-      <View style={s.instLegend}>
-        <Text style={[s.instLegText, { color: C.success }]}>{stats.s} validés</Text>
-        <Text style={[s.instLegText, { color: C.warn }]}>{stats.p} en cours</Text>
-        <Text style={[s.instLegText, { color: C.danger }]}>{stats.d} bloqués</Text>
-      </View>
-    </View>
+    <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
+      <Animated.View style={[s.kpiCard, { opacity, transform: [{ translateY }, { scale }] }]}>
+        <LinearGradient colors={gradColors} style={s.kpiGradientStrip} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }} />
+        <View style={[s.kpiIconCircle, { backgroundColor: accentColor + '15' }]}>
+          {icon}
+        </View>
+        <Text style={s.kpiCount}>{count}</Text>
+        <Text style={s.kpiLabel}>{label}</Text>
+      </Animated.View>
+    </TouchableWithoutFeedback>
+  );
+}
+
+/** Institution Card — premium redesign */
+function InstBar({ name, stats, onPress, icon, accentColor }) {
+  const anim = useRef(new Animated.Value(0)).current;
+  const { scale, onPressIn, onPressOut } = usePressScale(0.97);
+  const hasRun = useRef(false);
+  if (!hasRun.current) {
+    hasRun.current = true;
+    Animated.timing(anim, { toValue: 1, duration: 900, delay: 300, useNativeDriver: false }).start();
+  }
+
+  const pctSuccess = stats.t > 0 ? Math.round((stats.s / stats.t) * 100) : 0;
+
+  return (
+    <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut} onPress={onPress}>
+      <Animated.View style={[s.instCard, { transform: [{ scale }] }]}>
+        {/* Left accent strip */}
+        <View style={[s.instAccentStrip, { backgroundColor: accentColor }]} />
+
+        {/* Header row */}
+        <View style={s.instHeader}>
+          <View style={[s.instIconWrap, { backgroundColor: accentColor + '18' }]}>
+            {icon}
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={s.instName}>{name}</Text>
+            <Text style={s.instTotal}>{stats.t} dossiers · {pctSuccess}% validés</Text>
+          </View>
+          <View style={s.instArrow}>
+            <Ionicons name="chevron-forward" size={16} color={C.muted} />
+          </View>
+        </View>
+
+        {/* Animated progress bar */}
+        <View style={s.instTrack}>
+          {stats.s > 0 && (
+            <Animated.View style={[s.instSeg, {
+              flex: anim.interpolate({ inputRange: [0, 1], outputRange: [0.001, stats.s] }),
+              backgroundColor: C.success,
+              borderTopLeftRadius: 7, borderBottomLeftRadius: 7,
+              borderTopRightRadius: stats.p === 0 && stats.d === 0 ? 7 : 0,
+              borderBottomRightRadius: stats.p === 0 && stats.d === 0 ? 7 : 0,
+            }]} />
+          )}
+          {stats.p > 0 && (
+            <Animated.View style={[s.instSeg, {
+              flex: anim.interpolate({ inputRange: [0, 1], outputRange: [0.001, stats.p] }),
+              backgroundColor: C.warn,
+            }]} />
+          )}
+          {stats.d > 0 && (
+            <Animated.View style={[s.instSeg, {
+              flex: anim.interpolate({ inputRange: [0, 1], outputRange: [0.001, stats.d] }),
+              backgroundColor: C.danger,
+              borderTopRightRadius: 7, borderBottomRightRadius: 7,
+            }]} />
+          )}
+        </View>
+
+        {/* Status badges */}
+        <View style={s.instBadges}>
+          <View style={[s.instBadge, { backgroundColor: C.success + '15' }]}>
+            <View style={[s.instBadgeDot, { backgroundColor: C.success }]} />
+            <Text style={[s.instBadgeNum, { color: C.success }]}>{stats.s}</Text>
+            <Text style={s.instBadgeLabel}>Validés</Text>
+          </View>
+          <View style={[s.instBadge, { backgroundColor: C.warn + '15' }]}>
+            <View style={[s.instBadgeDot, { backgroundColor: C.warn }]} />
+            <Text style={[s.instBadgeNum, { color: C.warn }]}>{stats.p}</Text>
+            <Text style={s.instBadgeLabel}>En cours</Text>
+          </View>
+          <View style={[s.instBadge, { backgroundColor: C.danger + '15' }]}>
+            <View style={[s.instBadgeDot, { backgroundColor: C.danger }]} />
+            <Text style={[s.instBadgeNum, { color: C.danger }]}>{stats.d}</Text>
+            <Text style={s.instBadgeLabel}>Bloqués</Text>
+          </View>
+        </View>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 }
 
 /** Alert row */
 function AlertRow({ code, client, source, urgent }) {
+  const { scale, onPressIn, onPressOut } = usePressScale(0.97);
   return (
-    <View style={s.alertCard}>
-      <View style={s.alertLeft}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-          <Text style={s.alertCode}>{code}</Text>
-          <View style={s.sourcePill}><Text style={s.sourcePillText}>{source}</Text></View>
+    <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
+      <Animated.View style={[s.alertCard, { transform: [{ scale }] }]}>
+        <View style={[s.alertLeftStrip, { backgroundColor: urgent ? C.danger : C.warn }]} />
+        <View style={s.alertLeft}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+            <Text style={s.alertCode}>{code}</Text>
+            <View style={s.sourcePill}><Text style={s.sourcePillText}>{source}</Text></View>
+          </View>
+          <Text style={s.alertClient}>{client}</Text>
         </View>
-        <Text style={s.alertClient}>{client}</Text>
-      </View>
-      <View style={[s.alertBadge, { backgroundColor: urgent ? C.dangerBg : C.warnBg }]}>
-        <Text style={[s.alertBadgeText, { color: urgent ? C.dangerText : C.warnText }]}>
-          {urgent ? 'Urgent' : 'Bloqué'}
-        </Text>
-      </View>
-    </View>
-  );
-}
-
-/** Mini evolution bar chart */
-function EvolChart({ data }) {
-  const max = Math.max(...data.map(d => d.value), 1);
-  const BAR_H = 60;
-  return (
-    <View style={s.evolWrap}>
-      {data.map((d, i) => (
-        <View key={i} style={s.evolCol}>
-          <View style={[s.evolBar, { height: Math.max(4, Math.round((d.value / max) * BAR_H)) }]} />
-          <Text style={s.evolLabel}>{d.label}</Text>
+        <View style={[s.alertBadge, { backgroundColor: urgent ? C.dangerBg : C.warnBg }]}>
+          <Text style={[s.alertBadgeText, { color: urgent ? C.dangerText : C.warnText }]}>
+            {urgent ? 'Urgent' : 'Bloqué'}
+          </Text>
         </View>
-      ))}
-    </View>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 }
 
 /** Donut Chart Section */
 const DonutChartSection = ({ stats }) => {
+  const router = useRouter();
+  const { scale, onPressIn, onPressOut } = usePressScale(0.975);
   const donutData = [
-    { value: stats.dgi.t || 1, color: '#3D6795', text: 'DGI', focused: true },
+    { value: stats.dgi.t || 1, color: C.navyLight, text: 'DGI', focused: true },
     { value: stats.tgr.t || 1, color: '#6366f1', text: 'TGR' },
     { value: stats.daamsakan.t || 1, color: '#ec4899', text: 'DAAM SAKAN' },
   ];
 
   return (
-    <View style={s.donutCard}>
-      <Text style={s.sectionTitle}>Répartition des Dossiers</Text>
-
-      <View style={s.chartRow}>
-        <PieChart
-          donut
-          radius={70}
-          innerRadius={50}
-          data={donutData}
-          innerCircleColor={C.surface}
-          centerLabelComponent={() => {
-            return (
+    <TouchableWithoutFeedback onPressIn={onPressIn} onPressOut={onPressOut}>
+      <Animated.View style={[s.donutCard, { transform: [{ scale }] }]}>
+        <Text style={s.sectionTitle}>Répartition des Dossiers</Text>
+        <Text style={[s.sectionSub, { marginBottom: 14 }]}>Vue d'ensemble par institution</Text>
+        <View style={s.chartRow}>
+          <PieChart
+            donut
+            radius={70}
+            innerRadius={50}
+            data={donutData}
+            innerCircleColor={C.surface}
+            centerLabelComponent={() => (
               <View style={{ alignItems: 'center', justifyContent: 'center' }}>
                 <Text style={s.centerNumber}>{stats.total}</Text>
                 <Text style={s.centerText}>TOTAL</Text>
               </View>
-            );
+            )}
+          />
+          <View style={s.legendColumn}>
+            <LegendItemPie color={C.navyLight} label="DGI" count={stats.dgi.t} onPress={() => router.push('/dgi')} />
+            <LegendItemPie color="#6366f1" label="TGR" count={stats.tgr.t} onPress={() => router.push('/tgr')} />
+            <LegendItemPie color="#ec4899" label="DAAM SAKAN" count={stats.daamsakan.t} onPress={() => router.push('/daamsakan')} />
+          </View>
+        </View>
+      </Animated.View>
+    </TouchableWithoutFeedback>
+  );
+};
+
+const LegendItemPie = ({ color, label, count, onPress }) => (
+  <TouchableOpacity style={s.donutLegendItem} onPress={onPress} activeOpacity={0.6}>
+    <View style={[s.donutDot, { backgroundColor: color }]} />
+    <View>
+      <Text style={s.donutLegendLabel}>{label}</Text>
+      <Text style={s.donutLegendCount}>{count} dossiers</Text>
+    </View>
+  </TouchableOpacity>
+);
+
+/** Activity Line Chart */
+const ActivitySection = ({ data = [], totalSent = 0, peakMonth = '' }) => {
+  const screenWidth = Dimensions.get('window').width;
+  const chartWidth = screenWidth - 100;
+
+  const chartData = data.length > 0 
+    ? data 
+    : [{ value: 0, label: '—' }];
+
+  return (
+    <View>
+      <View style={s.headerRow}>
+        <TrendingUp color={C.navyLight} size={22} />
+        <Text style={s.sectionTitle}>Flux d'Activité</Text>
+      </View>
+      <Text style={[s.sectionSub, { marginLeft: 34 }]}>Envois consolidés DGI · TGR · DAAM SAKAN</Text>
+
+      <View style={s.chartWrapper}>
+        <LineChart
+          data={chartData}
+          height={170}
+          width={chartWidth}
+          initialSpacing={20}
+          spacing={chartData.length > 1 ? chartWidth / (chartData.length + 0.5) : 100}
+          color={C.navyLight}
+          thickness={2.5}
+          hideRules
+          yAxisThickness={0}
+          xAxisThickness={1}
+          xAxisColor={C.border}
+          yAxisTextStyle={{ color: C.muted, fontSize: 10 }}
+          xAxisLabelTextStyle={{ color: C.muted, fontSize: 9 }}
+          curved
+          isAnimated
+          animationDuration={1000}
+          noOfSections={4}
+          dataPointsColor={C.navyLight}
+          dataPointsRadius={5}
+          focusedDataPointColor={C.gold}
+          focusedDataPointRadius={7}
+          startFillColor={C.navyLight}
+          endFillColor="transparent"
+          startOpacity={0.18}
+          endOpacity={0}
+          areaChart
+          pointerConfig={{
+            pointerStripUptoDataPoint: true,
+            pointerStripColor: C.border,
+            pointerStripWidth: 1,
+            pointerColor: C.navyLight,
+            radius: 5,
+            pointerLabelWidth: 80,
+            pointerLabelHeight: 30,
+            pointerLabelComponent: (items) => (
+              <View style={s.tooltip}>
+                <Text style={s.tooltipText}>{items[0].value} envois</Text>
+              </View>
+            ),
           }}
         />
+      </View>
 
-        <View style={s.legendColumn}>
-          <LegendItemPie color="#3D6795" label="DGI" count={stats.dgi.t} />
-          <LegendItemPie color="#6366f1" label="TGR" count={stats.tgr.t} />
-          <LegendItemPie color="#ec4899" label="DAAM SAKAN" count={stats.daamsakan.t} />
+      {/* Summary row */}
+      <View style={s.activitySummaryRow}>
+        <View style={s.activityStat}>
+          <Text style={s.activityStatValue}>{totalSent}</Text>
+          <Text style={s.activityStatLabel}>Total envoyés</Text>
+        </View>
+        <View style={s.activityStatSep} />
+        <View style={s.activityStat}>
+          <Text style={s.activityStatValue}>{data.length}</Text>
+          <Text style={s.activityStatLabel}>Périodes</Text>
+        </View>
+        <View style={s.activityStatSep} />
+        <View style={s.activityStat}>
+          <Text style={[s.activityStatValue, { color: C.gold }]}>{peakMonth}</Text>
+          <Text style={s.activityStatLabel}>Pic d'activité</Text>
         </View>
       </View>
     </View>
   );
 };
 
-const LegendItemPie = ({ color, label, count }) => (
-  <View style={s.donutLegendItem}>
-    <View style={[s.donutDot, { backgroundColor: color }]} />
+/** Financial Analysis Bar Chart */
+const FinancialAnalysis = ({ dataDGI = [] }) => {
+  const screenWidth = Dimensions.get('window').width;
+
+  const financialData = useMemo(() => {
+    return dataDGI.flatMap(item => [
+      {
+        value: item.montant_affaire / 1000000,
+        spacing: 4,
+        frontColor: C.gold,
+        gradientColor: '#d4a843',
+        dossier: item.dossier_repertoir,
+      },
+      {
+        value: item.montant_enregistrement / 1000000,
+        frontColor: C.success,
+        gradientColor: '#2ecc71',
+        dossier: item.dossier_repertoir,
+      }
+    ]);
+  }, [dataDGI]);
+
+  const totalAffaire = dataDGI.reduce((acc, curr) => acc + curr.montant_affaire, 0);
+  const totalEnreg = dataDGI.reduce((acc, curr) => acc + curr.montant_enregistrement, 0);
+
+  // Top 3 dossiers by montant
+  const top3 = useMemo(() => {
+    return [...dataDGI]
+      .sort((a, b) => b.montant_affaire - a.montant_affaire)
+      .slice(0, 3);
+  }, [dataDGI]);
+
+  return (
     <View>
-      <Text style={s.donutLegendLabel}>{label}</Text>
-      <Text style={s.donutLegendCount}>{count} dossiers</Text>
+      <View style={s.headerRow}>
+        <Wallet color={C.navyLight} size={22} />
+        <Text style={s.sectionTitle}>Analyse Financière</Text>
+      </View>
+      
+      <Text style={s.sectionSubWithMargin}>Montants par dossier (en Millions DH)</Text>
+
+      <View style={s.chartWrapper}>
+        <BarChart
+          data={financialData}
+          width={screenWidth - 100}
+          height={180}
+          barWidth={18}
+          spacing={financialData.length > 20 ? 8 : 14}
+          noOfSections={6}
+          maxValue={3}
+          yAxisThickness={0}
+          xAxisThickness={1}
+          xAxisColor={C.border}
+          xAxisLabelsHeight={0}
+          yAxisTextStyle={{ color: C.muted, fontSize: 10 }}
+          isAnimated
+          animationDuration={800}
+          barBorderTopLeftRadius={4}
+          barBorderTopRightRadius={4}
+          renderTooltip={(item) => (
+            <View style={[s.tooltip, { minWidth: 95 }]}>
+              <Text style={[s.tooltipText, { fontSize: 9 }]} numberOfLines={2}>
+                {item.dossier ? item.dossier.split('-').slice(-2).join('-') : ''}{item.dossier ? '\n' : ''}{item.value.toFixed(2)}M DH
+              </Text>
+            </View>
+          )}
+        />
+      </View>
+
+      {/* Legend */}
+      <View style={s.chartFooter}>
+        <View style={s.legendRow}>
+          <View style={s.legendItem}>
+            <View style={[s.legendDotSmall, { backgroundColor: C.gold }]} />
+            <Text style={s.legendTextSmall}>Montant Affaire</Text>
+          </View>
+          <View style={[s.legendItem, { marginLeft: 15 }]}>
+            <View style={[s.legendDotSmall, { backgroundColor: C.success }]} />
+            <Text style={s.legendTextSmall}>Enregistrement</Text>
+          </View>
+        </View>
+
+        {/* Summary cards */}
+        <View style={s.finSummaryRow}>
+          <View style={[s.finSummaryCard, { borderLeftColor: C.gold }]}>
+            <Text style={s.finSummaryLabel}>Total Affaires</Text>
+            <Text style={[s.finSummaryValue, { color: C.gold }]}>{(totalAffaire / 1000000).toFixed(2)}M</Text>
+          </View>
+          <View style={[s.finSummaryCard, { borderLeftColor: C.success }]}>
+            <Text style={s.finSummaryLabel}>Total Enreg.</Text>
+            <Text style={[s.finSummaryValue, { color: C.success }]}>{(totalEnreg / 1000000).toFixed(2)}M</Text>
+          </View>
+        </View>
+
+        {/* Top 3 */}
+        <Text style={s.topLabel}>Top 3 dossiers</Text>
+        {top3.map((d, i) => (
+          <View key={i} style={s.topRow}>
+            <View style={[s.topRank, { backgroundColor: i === 0 ? C.gold : C.surface2 }]}>
+              <Text style={[s.topRankText, { color: i === 0 ? '#fff' : C.muted }]}>{i + 1}</Text>
+            </View>
+            <Text style={s.topDossier} numberOfLines={1}>{d.dossier_repertoir}</Text>
+            <Text style={s.topAmount}>{(d.montant_affaire / 1000000).toFixed(2)}M</Text>
+          </View>
+        ))}
+      </View>
     </View>
-  </View>
-);
+  );
+};
 
 // ─── MAIN SCREEN ────────────────────────────────────────────────────────────
 export default function Dashboard() {
+  const router = useRouter();
+  const { notaire } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const [data] = useState(MOCK_DATA);
+  const [data] = useState(realData);
+
+  // Header fade
+  const headerOpacity = useRef(new Animated.Value(0)).current;
+  const headerHasRun = useRef(false);
+  if (!headerHasRun.current) {
+    headerHasRun.current = true;
+    Animated.timing(headerOpacity, { toValue: 1, duration: 500, useNativeDriver: true }).start();
+  }
 
   const stats = useMemo(() => {
     const dgi = getServiceStats(data.DGI);
     const tgr = getServiceStats(data.TGR);
     const daamsakan = getServiceStats(data.DAAMSAKAN);
-    const total = dgi.t + tgr.t + daamsakan.t;
-    const success = dgi.s + tgr.s + daamsakan.s;
-    const pending = dgi.p + tgr.p + daamsakan.p;
-    const alerts = dgi.d + tgr.d + daamsakan.d;
-    const pct = Math.round((success / total) * 100);
 
-    const totalAmount = [...data.DGI].reduce((a, i) => a + i.montant_affaire, 0);
+    // ─── DÉDOUBLONNAGE PAR DOSSIER UNIQUE ───
+    const dossierMap = new Map();
+
+    const process = (arr, source) => {
+      arr.forEach(item => {
+        const key = item.dossier_repertoir || `UNKNOWN-${item.id}-${source}`;
+        if (!dossierMap.has(key)) {
+          dossierMap.set(key, { states: [], amounts: 0 });
+        }
+        const entry = dossierMap.get(key);
+        entry.states.push(classify(item.state));
+        if (item.montant_affaire) entry.amounts += item.montant_affaire;
+      });
+    };
+
+    process(data.DGI, 'DGI');
+    process(data.TGR, 'TGR');
+    process(data.DAAMSAKAN, 'DS');
+
+    let total = 0, success = 0, pending = 0, alerts = 0;
+    let totalAmount = 0;
+
+    dossierMap.forEach((val) => {
+      total++;
+      totalAmount += val.amounts;
+      
+      const hasAlert = val.states.includes('d');
+      const allSuccess = val.states.every(s => s === 's');
+
+      if (hasAlert) alerts++;
+      else if (allSuccess) success++;
+      else pending++;
+    });
 
     const allAlerts = [
       ...data.DGI.filter(i => ALERT_STATES.includes(i.state))
@@ -255,19 +549,27 @@ export default function Dashboard() {
       ...data.TGR.filter(i => ALERT_STATES.includes(i.state))
         .map(i => ({ code: i.numeroDemande, client: 'Redevable TGR', source: 'TGR', urgent: i.state === 'annule' })),
       ...data.DAAMSAKAN.filter(i => ALERT_STATES.includes(i.state))
-        .map(i => ({ code: i.demande_ref, client: i.nom_beneficier, source: 'DAAM SAKAN', urgent: ['Annuler', 'expire'].includes(i.state) })),
+        .map(i => ({ code: i.demande_ref, client: i.nom_beneficier, source: 'DAAM', urgent: ['Annuler', 'expire'].includes(i.state) })),
     ].slice(0, 5);
 
-    // Evolution par mois (DGI)
+    // Activity data — combine DGI + TGR + DAAMSAKAN dates
     const map = {};
-    data.DGI.forEach(i => {
-      if (!i.date_envoie) return;
-      const m = i.date_envoie.slice(5, 7) + '/' + i.date_envoie.slice(2, 4);
-      map[m] = (map[m] || 0) + 1;
-    });
-    const evolData = Object.keys(map).sort().map(k => ({ label: k, value: map[k] }));
+    const addDates = (arr) => {
+      arr.forEach(i => {
+        if (!i.date_envoie) return;
+        const m = i.date_envoie.slice(5, 7) + '/' + i.date_envoie.slice(2, 4);
+        map[m] = (map[m] || 0) + 1;
+      });
+    };
+    addDates(data.DGI);
+    addDates(data.TGR);
+    addDates(data.DAAMSAKAN);
 
-    return { dgi, tgr, daamsakan, total, success, pending, alerts, pct, totalAmount, allAlerts, evolData };
+    const evolData = Object.keys(map).sort().map(k => ({ label: k, value: map[k] }));
+    const totalSent = evolData.reduce((acc, d) => acc + d.value, 0);
+    const peakEntry = evolData.reduce((max, d) => d.value > max.value ? d : max, { value: 0, label: '—' });
+
+    return { dgi, tgr, daamsakan, total, success, pending, alerts, totalAmount, allAlerts, evolData, totalSent, peakMonth: peakEntry.label };
   }, [data]);
 
   const onRefresh = useCallback(() => {
@@ -275,123 +577,193 @@ export default function Dashboard() {
     setTimeout(() => setRefreshing(false), 1200);
   }, []);
 
+  const initials = `${notaire.prenom[0]}${notaire.nom[0]}`;
+
   return (
     <View style={s.container}>
-      <StatusBar barStyle="dark-content" backgroundColor={C.surface} />
-
-      {/* ── HEADER ── */}
-      <View style={s.header}>
-        <View style={s.headerLeft}>
-          <Image
-            source={{ uri: 'https://lh3.googleusercontent.com/aida-public/AB6AXuArAPMGNvxg60UJvYYDvWfEWW9G202fSLHLOGogCh_0t4KchwwwzHytacNtvbx-yjVoOVRsEHclf9jZN3j_02i5oL6zdCn6Voi8r5J3v7pGeNgMKksmKnXhgYn8q_wyYwCer0hyDntKlTlEbYqHNjL9kqD0FWD8-JDXuRqNRhjcWlfUrSKSEXmaWdgBOj0NynvxNuesboY3GXMIAtw0KY8ub7Is805x2K2zclV5GSnci06DIwGg4NY5mLEitPuQm5IdQ4UvptvGMo' }}
-            style={s.avatar}
-          />
-          <View>
-            <Text style={s.headerGreet}>Bonjour, Maître</Text>
-            <Text style={s.headerSub}>Tableau de bord de l'étude</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={s.bellWrap}>
-          <Bell color={C.navyMid} size={22} />
-          {stats.alerts > 0 && <View style={s.bellDot} />}
-        </TouchableOpacity>
-      </View>
-
+      <StatusBar barStyle="light-content" backgroundColor={C.navy} />
       <ScrollView
         contentContainerStyle={s.scroll}
         showsVerticalScrollIndicator={false}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={C.navyMid} />}
       >
+        {/* ── HERO HEADER ── */}
+        <Animated.View style={[s.heroHeader, { opacity: headerOpacity }]}>
+          <LinearGradient
+            colors={['#1a2e44', '#2d4a6e', '#3d6795']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          {/* Decorative rings */}
+          <View style={s.heroRing1} />
+          <View style={s.heroRing2} />
 
-        {/* ── HERO AMOUNT ── */}
-        <View style={s.heroCard}>
-          <Text style={s.heroLabel}>Montant total des affaires (DGI)</Text>
-          <Text style={s.heroAmount}>{fmtAmount(stats.totalAmount)} MAD</Text>
-          <View style={s.heroRow}>
-            <TrendingUp size={12} color={C.success} />
-            <Text style={s.heroSub}> {stats.total} dossiers · {stats.pct}% de réussite</Text>
+          <View style={s.heroTop}>
+            <View style={s.headerLeft}>
+              <View style={s.avatarContainer}>
+                <Text style={s.avatarText}>{initials}</Text>
+              </View>
+              <View>
+                <Text style={s.headerGreet}>Bonjour, Maître {notaire.nom}</Text>
+                <Text style={s.headerSub}>Tableau de bord · TAWTIK</Text>
+              </View>
+            </View>
+            <TouchableOpacity style={s.bellWrap} onPress={() => router.push('/(tabs)/Notifications')}>
+              <Bell color="#fff" size={22} />
+              {stats.alerts > 0 && <View style={s.bellDot} />}
+            </TouchableOpacity>
           </View>
-        </View>
 
-        {/* ── SUMMARY MINI CARDS ── */}
-        <View style={s.summaryRow}>
-          <View style={s.summaryCard}>
-            <Text style={s.summaryValue}>{stats.total}</Text>
-            <Text style={s.summaryLabel}>Dossiers</Text>
+          {/* Hero amount inside header */}
+          <View style={s.heroAmountBlock}>
+            <Text style={s.heroLabel}>Volume total des affaires</Text>
+            <Text style={s.heroAmount}>{fmtAmount(stats.totalAmount)} MAD</Text>
+            <View style={s.heroRow}>
+              <TrendingUp size={14} color={C.goldLight} />
+              <Text style={s.heroSub}> {stats.total} dossiers uniques traités</Text>
+            </View>
           </View>
-          <View style={s.summaryCard}>
-            <Text style={s.summaryValue}>{stats.pct}%</Text>
-            <Text style={s.summaryLabel}>De réussite</Text>
+        </Animated.View>
+
+
+
+        {/* ── SYNTHÈSE DES DOSSIERS ── */}
+        <AnimatedCard delay={120} pressable style={s.syntheseCard}>
+          <LinearGradient
+            colors={['#1a2e44', '#2d4a6e', '#3d6795']}
+            style={StyleSheet.absoluteFill}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+          />
+          {/* Header */}
+          <View style={s.syntheseHeader}>
+            <View style={s.syntheseIconBig}>
+              <Ionicons name="briefcase" size={26} color="#fff" />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={s.syntheseTitle}>Synthèse des dossiers</Text>
+              <Text style={s.syntheseSub}>Vue globale de tous les services</Text>
+            </View>
           </View>
-        </View>
+
+          {/* Big number */}
+          <View style={s.syntheseBigRow}>
+            <Text style={s.syntheseBigNum}>{stats.total}</Text>
+            <Text style={s.syntheseBigLabel}>dossiers{'\n'}uniques</Text>
+            <View style={s.synthesePercentBadge}>
+              <Ionicons name="trending-up" size={14} color={C.success} />
+              <Text style={s.synthesePercentText}>
+                {stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0}%
+              </Text>
+            </View>
+          </View>
+
+          {/* Progress bar */}
+          <View style={s.syntheseBarTrack}>
+            {stats.success > 0 && (
+              <View style={[s.syntheseBarSeg, {
+                flex: stats.success,
+                backgroundColor: C.success,
+                borderTopLeftRadius: 6, borderBottomLeftRadius: 6,
+                borderTopRightRadius: stats.pending === 0 && stats.alerts === 0 ? 6 : 0,
+                borderBottomRightRadius: stats.pending === 0 && stats.alerts === 0 ? 6 : 0,
+              }]} />
+            )}
+            {stats.pending > 0 && (
+              <View style={[s.syntheseBarSeg, { flex: stats.pending, backgroundColor: C.warn }]} />
+            )}
+            {stats.alerts > 0 && (
+              <View style={[s.syntheseBarSeg, {
+                flex: stats.alerts,
+                backgroundColor: C.danger,
+                borderTopRightRadius: 6, borderBottomRightRadius: 6,
+              }]} />
+            )}
+          </View>
+
+          {/* 3 stat columns */}
+          <View style={s.syntheseStats}>
+            <View style={s.syntheseStatCol}>
+              <View style={[s.syntheseStatDot, { backgroundColor: C.success }]} />
+              <Text style={s.syntheseStatNum}>{stats.success}</Text>
+              <Text style={s.syntheseStatLabel}>Validés</Text>
+            </View>
+            <View style={s.syntheseStatSep} />
+            <View style={s.syntheseStatCol}>
+              <View style={[s.syntheseStatDot, { backgroundColor: C.warn }]} />
+              <Text style={s.syntheseStatNum}>{stats.pending}</Text>
+              <Text style={s.syntheseStatLabel}>En cours</Text>
+            </View>
+            <View style={s.syntheseStatSep} />
+            <View style={s.syntheseStatCol}>
+              <View style={[s.syntheseStatDot, { backgroundColor: C.danger }]} />
+              <Text style={s.syntheseStatNum}>{stats.alerts}</Text>
+              <Text style={s.syntheseStatLabel}>Bloqués</Text>
+            </View>
+          </View>
+        </AnimatedCard>
 
         {/* ── DONUT CHART ── */}
-        <DonutChartSection stats={stats} />
-
-        {/* ── KPI CARDS ── */}
-        <View style={s.kpiRow}>
-          <KpiCard
-            icon={<CheckCircle2 size={18} color={C.success} />}
-            count={stats.success} label="Terminé"
-            accentColor={C.success} bgColor={C.successBg}
-          />
-          <KpiCard
-            icon={<Clock3 size={18} color={C.warn} />}
-            count={stats.pending} label="En cours"
-            accentColor={C.warn} bgColor={C.warnBg}
-          />
-          <KpiCard
-            icon={<AlertTriangle size={18} color={C.danger} />}
-            count={stats.alerts} label="Bloqué"
-            accentColor={C.danger} bgColor={C.dangerBg}
-          />
-        </View>
-
-        {/* ── PROGRESS ── */}
-        <View style={s.card}>
-          <View style={s.progressHead}>
-            <Text style={s.sectionTitle}>Taux de réussite</Text>
-            <Text style={s.pctValue}>{stats.pct}%</Text>
-          </View>
-          <View style={s.track}>
-            <View style={[s.trackFill, { width: `${stats.pct}%` }]} />
-          </View>
-          <View style={s.progressFoot}>
-            <Text style={s.progressFootText}>{stats.total} dossiers au total</Text>
-            <Text style={[s.progressFootText, { color: C.success }]}>{stats.success} validés</Text>
-          </View>
-        </View>
+        <AnimatedCard delay={200} style={{ marginBottom: 16 }}>
+          <DonutChartSection stats={stats} />
+        </AnimatedCard>
 
         {/* ── PAR INSTITUTION ── */}
-        <View style={s.card}>
-          <Text style={s.sectionTitle}>Analyse par institution</Text>
-          <View style={s.legend}>
-            {[['Validé', C.success], ['En cours', C.warn], ['Bloqué', C.danger]].map(([l, c]) => (
-              <View key={l} style={s.legendItem}>
-                <View style={[s.legendDot, { backgroundColor: c }]} />
-                <Text style={s.legendText}>{l}</Text>
-              </View>
-            ))}
+        <AnimatedCard delay={280} style={{ marginBottom: 16 }}>
+          <View style={s.instSectionHeader}>
+            <Landmark color={C.navyLight} size={22} />
+            <View>
+              <Text style={s.sectionTitle}>Analyse par institution</Text>
+              <Text style={[s.sectionSub, { marginBottom: 0 }]}>Répartition des statuts par service</Text>
+            </View>
           </View>
-          <InstBar name="DGI" stats={stats.dgi} />
-          <InstBar name="TGR" stats={stats.tgr} />
-          <InstBar name="DAAM SAKAN" stats={stats.daamsakan} />
-        </View>
+        </AnimatedCard>
 
-        {/* ── ÉVOLUTION DGI ── */}
-        <View style={s.card}>
-          <Text style={s.sectionTitle}>Évolution des dossiers DGI</Text>
-          <EvolChart data={stats.evolData} />
-        </View>
+        <InstBar
+          name="DGI · Impôts"
+          stats={stats.dgi}
+          onPress={() => router.push('/dgi')}
+          icon={<Ionicons name="document-text-outline" size={22} color="#3d6795" />}
+          accentColor="#3d6795"
+        />
+        <InstBar
+          name="TGR · Trésorerie"
+          stats={stats.tgr}
+          onPress={() => router.push('/tgr')}
+          icon={<Ionicons name="layers-outline" size={22} color="#6366f1" />}
+          accentColor="#6366f1"
+        />
+        <InstBar
+          name="DAAM SAKAN"
+          stats={stats.daamsakan}
+          onPress={() => router.push('/daamsakan')}
+          icon={<Ionicons name="home-outline" size={22} color="#ec4899" />}
+          accentColor="#ec4899"
+        />
+
+        {/* ── FINANCIAL ANALYSIS ── */}
+        <AnimatedCard delay={340} pressable style={s.card}>
+          <FinancialAnalysis dataDGI={data.DGI} />
+        </AnimatedCard>
+
+        {/* ── ÉVOLUTION ── */}
+        <AnimatedCard delay={400} pressable style={s.card}>
+          <ActivitySection data={stats.evolData} totalSent={stats.totalSent} peakMonth={stats.peakMonth} />
+        </AnimatedCard>
 
         {/* ── ALERTES ── */}
-        <View style={{ marginBottom: 32 }}>
-          <Text style={[s.sectionTitle, { marginBottom: 10 }]}>Alertes critiques</Text>
+        <AnimatedCard delay={460} style={{ marginBottom: 32 }}>
+          <View style={s.alertHeader}>
+            <AlertTriangle size={18} color={C.danger} />
+            <Text style={[s.sectionTitle, { marginBottom: 0 }]}>Alertes critiques</Text>
+          </View>
+          <Text style={[s.sectionSub, { marginBottom: 14 }]}>Dossiers nécessitant une attention immédiate</Text>
           {stats.allAlerts.length === 0
             ? <Text style={{ color: C.muted, fontSize: 13 }}>Aucune alerte critique.</Text>
             : stats.allAlerts.map((a, i) => <AlertRow key={i} {...a} />)
           }
-        </View>
+        </AnimatedCard>
 
       </ScrollView>
     </View>
@@ -402,123 +774,256 @@ export default function Dashboard() {
 const s = StyleSheet.create({
   container: { flex: 1, backgroundColor: C.bg },
 
-  // Header
-  header: {
+  // Hero header
+  heroHeader: {
+    marginHorizontal: -16, marginTop: -16,
+    paddingHorizontal: 20, paddingTop: 20, paddingBottom: 28,
+    borderBottomLeftRadius: 28, borderBottomRightRadius: 28,
+    overflow: 'hidden',
+    marginBottom: 16,
+  },
+  heroRing1: {
+    position: 'absolute', width: 260, height: 260, borderRadius: 130,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.06)',
+    top: -80, right: -60,
+  },
+  heroRing2: {
+    position: 'absolute', width: 180, height: 180, borderRadius: 90,
+    borderWidth: 1, borderColor: 'rgba(184,146,42,0.12)',
+    bottom: -40, left: -40,
+  },
+  heroTop: {
     flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    paddingHorizontal: 20, paddingTop: 56, paddingBottom: 16, backgroundColor: C.surface,
-    borderBottomWidth: 1, borderBottomColor: C.border
+    marginBottom: 20,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  avatar: { width: 44, height: 44, borderRadius: 22, borderWidth: 2, borderColor: C.navyLight },
-  headerGreet: { fontSize: 26, fontWeight: '900', color: C.navy, letterSpacing: -0.5 },
-  headerSub: { fontSize: 14, fontWeight: '900', color: C.muted, marginTop: 1, textTransform: 'uppercase', letterSpacing: 0.5 },
-  bellWrap: { position: 'relative', padding: 4 },
-  bellDot: {
-    position: 'absolute', top: 4, right: 4, width: 10, height: 10,
-    borderRadius: 5, backgroundColor: C.danger, borderWidth: 2, borderColor: C.surface
+  avatarContainer: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    borderWidth: 2, borderColor: C.goldLight,
+    alignItems: 'center', justifyContent: 'center',
   },
+  avatarText: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: 0.5 },
+  headerGreet: { fontSize: 18, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
+  headerSub: { fontSize: 12, fontWeight: '600', color: 'rgba(255,255,255,0.55)', marginTop: 1, letterSpacing: 0.5 },
+  bellWrap: {
+    position: 'relative', padding: 10,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 14,
+  },
+  bellDot: {
+    position: 'absolute', top: 8, right: 8, width: 10, height: 10,
+    borderRadius: 5, backgroundColor: C.danger, borderWidth: 2, borderColor: C.navy,
+  },
+
+  heroAmountBlock: {
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 16, padding: 18,
+    borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)',
+  },
+  heroLabel: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.55)', textTransform: 'uppercase', letterSpacing: 1 },
+  heroAmount: { fontSize: 34, fontWeight: '900', color: '#fff', marginTop: 4, letterSpacing: -1 },
+  heroRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
+  heroSub: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.7)' },
 
   scroll: { padding: 16, paddingBottom: 32 },
 
-  // Hero
-  heroCard: {
-    backgroundColor: C.navy, borderRadius: 16, padding: 22, marginBottom: 16,
-    shadowColor: '#1a2e44', shadowOpacity: 0.25, shadowRadius: 10, shadowOffset: { width: 0, height: 6 },
-    elevation: 6
+  // Synthèse card
+  syntheseCard: {
+    borderRadius: 20, padding: 20, marginBottom: 16,
+    overflow: 'hidden',
+    shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 16, shadowOffset: { width: 0, height: 6 },
+    elevation: 8,
   },
-  heroLabel: { fontSize: 16, fontWeight: '900', color: 'rgba(255,255,255,0.6)', textTransform: 'uppercase', letterSpacing: 1 },
-  heroAmount: { fontSize: 40, fontWeight: '900', color: '#fff', marginTop: 4, letterSpacing: -1.5 },
-  heroRow: { flexDirection: 'row', alignItems: 'center', marginTop: 8 },
-  heroSub: { fontSize: 14, fontWeight: '900', color: 'rgba(255,255,255,0.8)' },
-
-  // Summary Cards
-  summaryRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
-  summaryCard: {
-    flex: 1, backgroundColor: C.navyLight, borderRadius: 14, padding: 18, alignItems: 'center',
-    shadowColor: '#1a2e44', shadowOpacity: 0.15, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
-    elevation: 5
+  syntheseHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 18,
   },
-  summaryValue: { fontSize: 32, fontWeight: '900', color: '#ffffff', letterSpacing: -1 },
-  summaryLabel: { fontSize: 15, fontWeight: '900', color: 'rgba(255,255,255,0.8)', textTransform: 'uppercase', letterSpacing: 1, marginTop: 4 },
+  syntheseIconBig: {
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  syntheseTitle: { fontSize: 16, fontWeight: '800', color: '#fff', letterSpacing: -0.3 },
+  syntheseSub: { fontSize: 11, fontWeight: '600', color: 'rgba(255,255,255,0.5)', marginTop: 2 },
+  syntheseBigRow: {
+    flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 16,
+  },
+  syntheseBigNum: { fontSize: 48, fontWeight: '900', color: '#fff', letterSpacing: -2 },
+  syntheseBigLabel: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.5)', lineHeight: 16 },
+  synthesePercentBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    backgroundColor: 'rgba(39,174,96,0.2)',
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 10,
+    marginLeft: 'auto',
+  },
+  synthesePercentText: { fontSize: 14, fontWeight: '800', color: C.success },
+  syntheseBarTrack: {
+    height: 12, borderRadius: 6,
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    flexDirection: 'row', overflow: 'hidden', marginBottom: 16,
+  },
+  syntheseBarSeg: { height: '100%' },
+  syntheseStats: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+    borderRadius: 14, paddingVertical: 14,
+  },
+  syntheseStatCol: { flex: 1, alignItems: 'center', gap: 4 },
+  syntheseStatDot: { width: 8, height: 8, borderRadius: 4 },
+  syntheseStatNum: { fontSize: 20, fontWeight: '900', color: '#fff' },
+  syntheseStatLabel: { fontSize: 9, fontWeight: '700', color: 'rgba(255,255,255,0.5)', textTransform: 'uppercase', letterSpacing: 0.5 },
+  syntheseStatSep: { width: 1, height: 36, backgroundColor: 'rgba(255,255,255,0.12)' },
 
-  // KPI
+  // KPI cards
   kpiRow: { flexDirection: 'row', gap: 10, marginBottom: 16 },
   kpiCard: {
-    flex: 1, backgroundColor: C.surface, borderRadius: 14, padding: 14,
-    alignItems: 'center', borderTopWidth: 4,
-    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+    flex: 1, backgroundColor: C.surface, borderRadius: 16, padding: 14,
+    alignItems: 'center', overflow: 'hidden',
+    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  kpiIconWrap: { width: 38, height: 38, borderRadius: 10, alignItems: 'center', justifyContent: 'center', marginBottom: 8 },
+  kpiGradientStrip: {
+    position: 'absolute', top: 0, left: 0, right: 0, height: 4,
+    borderTopLeftRadius: 16, borderTopRightRadius: 16,
+  },
+  kpiIconCircle: {
+    width: 50, height: 50, borderRadius: 25,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 8, marginTop: 6,
+  },
   kpiCount: { fontSize: 28, fontWeight: '900', color: C.navy, letterSpacing: -0.5 },
-  kpiLabel: { fontSize: 14, fontWeight: '900', color: C.muted, textTransform: 'uppercase', letterSpacing: 1, marginTop: 2 },
+  kpiLabel: { fontSize: 11, fontWeight: '700', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginTop: 2 },
 
-  // Card
+  // Cards
   card: {
-    backgroundColor: C.surface, borderRadius: 16, padding: 18, marginBottom: 16,
-    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+    backgroundColor: C.surface, borderRadius: 18, padding: 18, marginBottom: 16,
+    shadowColor: '#1a2e44', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
-  sectionTitle: { fontSize: 20, fontWeight: '900', color: C.text, marginBottom: 14, letterSpacing: -0.3 },
-
-  // Progress
-  progressHead: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 10 },
-  pctValue: { fontSize: 32, fontWeight: '900', color: C.navy, letterSpacing: -1 },
-  track: { height: 8, backgroundColor: C.border, borderRadius: 4, overflow: 'hidden' },
-  trackFill: { height: '100%', backgroundColor: C.navyLight, borderRadius: 4 },
-  progressFoot: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 10 },
-  progressFootText: { fontSize: 13, fontWeight: '900', color: C.muted },
+  sectionTitle: { fontSize: 18, fontWeight: '800', color: C.text, marginBottom: 4, letterSpacing: -0.3 },
+  sectionSub: { fontSize: 12, color: C.muted, marginBottom: 16, fontWeight: '600' },
+  sectionSubWithMargin: { fontSize: 12, color: C.muted, marginBottom: 20, fontWeight: '600', marginLeft: 34 },
+  chartWrapper: { alignItems: 'center', marginLeft: -10 },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 4 },
+  chartFooter: { marginTop: 20, paddingTop: 15, borderTopWidth: 1, borderTopColor: C.border },
+  legendRow: { flexDirection: 'row', justifyContent: 'center', marginBottom: 15 },
+  legendDotSmall: { width: 10, height: 10, borderRadius: 5, marginRight: 6 },
+  legendTextSmall: { fontSize: 12, color: C.muted, fontWeight: '700' },
+  totalBox: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
+    backgroundColor: C.surface2, padding: 12, borderRadius: 12,
+  },
+  totalLabel: { fontSize: 14, color: C.muted, marginLeft: 8, fontWeight: '700' },
+  totalValue: { fontSize: 17, fontWeight: '900', color: C.navyLight },
+  tooltip: { backgroundColor: C.navy, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  tooltipText: { color: '#fff', fontSize: 10, fontWeight: '900' },
 
   // Legend
   legend: { flexDirection: 'row', gap: 14, marginBottom: 16 },
   legendItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  legendDot: { width: 10, height: 10, borderRadius: 3 },
-  legendText: { fontSize: 12, fontWeight: '900', color: C.muted },
+  legendDot: { width: 10, height: 10, borderRadius: 5 },
+  legendText: { fontSize: 12, fontWeight: '700', color: C.muted },
 
-  // Inst bar
-  instRow: { marginBottom: 20 },
-  instMeta: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 6 },
-  instName: { fontSize: 16, fontWeight: '900', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.8 },
-  instTotal: { fontSize: 14, fontWeight: '900', color: C.muted },
-  instTrack: { height: 10, borderRadius: 5, backgroundColor: C.border, overflow: 'hidden', flexDirection: 'row' },
-  instSeg: { height: '100%' },
-  instLegend: { flexDirection: 'row', gap: 12, marginTop: 6 },
-  instLegText: { fontSize: 11, fontWeight: '900' },
-
-  // Evolution
-  evolWrap: { flexDirection: 'row', alignItems: 'flex-end', gap: 6, height: 90 },
-  evolCol: { flex: 1, alignItems: 'center', justifyContent: 'flex-end', height: 90 },
-  evolBar: { width: '100%', backgroundColor: C.navyLight, borderRadius: 4, opacity: 0.9 },
-  evolLabel: { fontSize: 10, fontWeight: '900', color: C.muted, marginTop: 4, textAlign: 'center' },
-
-  // Alert
-  alertCard: {
-    flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
-    backgroundColor: C.surface, borderRadius: 12, padding: 16, marginBottom: 16,
-    borderWidth: 1, borderColor: 'rgba(226, 232, 241, 0.4)',
-    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+  // Institution cards
+  instSectionHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
   },
-  alertLeft: { flex: 1, gap: 4 },
-  alertCode: { fontSize: 15, fontWeight: '900', color: C.navy, letterSpacing: -0.2 },
-  alertClient: { fontSize: 13, fontWeight: '900', color: C.muted },
-  sourcePill: { backgroundColor: C.surface2, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
-  sourcePillText: { fontSize: 10, fontWeight: '900', color: C.muted, letterSpacing: 0.5 },
-  alertBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
-  alertBadgeText: { fontSize: 11, fontWeight: '900', textTransform: 'uppercase', letterSpacing: 0.5 },
+  instCard: {
+    backgroundColor: C.surface, borderRadius: 18, padding: 16, paddingLeft: 20,
+    marginBottom: 12, overflow: 'hidden',
+    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
+  },
+  instAccentStrip: {
+    position: 'absolute', left: 0, top: 0, bottom: 0, width: 5,
+    borderTopLeftRadius: 18, borderBottomLeftRadius: 18,
+  },
+  instHeader: {
+    flexDirection: 'row', alignItems: 'center', gap: 12, marginBottom: 14,
+  },
+  instIconWrap: {
+    width: 44, height: 44, borderRadius: 12,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  instName: { fontSize: 15, fontWeight: '800', color: C.navy },
+  instTotal: { fontSize: 11, fontWeight: '600', color: C.muted, marginTop: 2 },
+  instArrow: {
+    width: 28, height: 28, borderRadius: 8,
+    backgroundColor: C.surface2, alignItems: 'center', justifyContent: 'center',
+  },
+  instTrack: { height: 14, borderRadius: 7, backgroundColor: C.border, overflow: 'hidden', flexDirection: 'row', marginBottom: 12 },
+  instSeg: { height: '100%' },
+  instBadges: { flexDirection: 'row', gap: 8 },
+  instBadge: {
+    flex: 1, flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingVertical: 8, paddingHorizontal: 10, borderRadius: 10,
+  },
+  instBadgeDot: { width: 8, height: 8, borderRadius: 4 },
+  instBadgeNum: { fontSize: 16, fontWeight: '900' },
+  instBadgeLabel: { fontSize: 9, fontWeight: '700', color: C.muted, textTransform: 'uppercase' },
 
-  // Donut Chart
+  // Alerts
+  alertHeader: { flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: 4 },
+  alertCard: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: C.surface, borderRadius: 14, padding: 14, marginBottom: 10,
+    borderWidth: 1, borderColor: C.border,
+    shadowColor: '#1a2e44', shadowOpacity: 0.06, shadowRadius: 6, shadowOffset: { width: 0, height: 3 },
+    elevation: 3,
+    overflow: 'hidden',
+  },
+  alertLeftStrip: {
+    position: 'absolute', left: 0, top: 0, bottom: 0, width: 4,
+    borderTopLeftRadius: 14, borderBottomLeftRadius: 14,
+  },
+  alertLeft: { flex: 1, gap: 4, paddingLeft: 6 },
+  alertCode: { fontSize: 14, fontWeight: '800', color: C.navy, letterSpacing: -0.2 },
+  alertClient: { fontSize: 12, fontWeight: '600', color: C.muted },
+  sourcePill: { backgroundColor: C.surface2, paddingHorizontal: 8, paddingVertical: 3, borderRadius: 6 },
+  sourcePillText: { fontSize: 10, fontWeight: '800', color: C.muted, letterSpacing: 0.5 },
+  alertBadge: { paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20 },
+  alertBadgeText: { fontSize: 10, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 0.5 },
+
+  // Donut
   donutCard: {
-    backgroundColor: C.surface, borderRadius: 16, padding: 18, marginBottom: 16,
-    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 8, shadowOffset: { width: 0, height: 4 },
-    elevation: 4
+    backgroundColor: C.surface, borderRadius: 18, padding: 18,
+    shadowColor: '#1a2e44', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 4 },
+    elevation: 4,
   },
   chartRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingRight: 10 },
   centerNumber: { fontSize: 24, fontWeight: '900', color: C.navy, letterSpacing: -1 },
-  centerText: { fontSize: 10, fontWeight: '900', color: C.muted, textTransform: 'uppercase' },
-  legendColumn: { justifyContent: 'center', gap: 12 },
-  donutLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  centerText: { fontSize: 10, fontWeight: '800', color: C.muted, textTransform: 'uppercase' },
+  legendColumn: { justifyContent: 'center', gap: 14 },
+  donutLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 10 },
   donutDot: { width: 12, height: 12, borderRadius: 4 },
-  donutLegendLabel: { fontSize: 13, fontWeight: '900', color: C.navy },
-  donutLegendCount: { fontSize: 11, fontWeight: '900', color: C.muted, marginTop: 2 },
+  donutLegendLabel: { fontSize: 13, fontWeight: '800', color: C.navy },
+  donutLegendCount: { fontSize: 11, fontWeight: '600', color: C.muted, marginTop: 1 },
+
+  // Financial summary
+  finSummaryRow: { flexDirection: 'row', gap: 10, marginTop: 16, marginBottom: 16 },
+  finSummaryCard: {
+    flex: 1, backgroundColor: C.surface2, borderRadius: 12, padding: 14,
+    borderLeftWidth: 4,
+  },
+  finSummaryLabel: { fontSize: 10, fontWeight: '700', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginBottom: 4 },
+  finSummaryValue: { fontSize: 22, fontWeight: '900', letterSpacing: -0.5 },
+
+  // Top 3
+  topLabel: { fontSize: 12, fontWeight: '800', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.8, marginBottom: 10 },
+  topRow: { flexDirection: 'row', alignItems: 'center', gap: 10, marginBottom: 8 },
+  topRank: { width: 26, height: 26, borderRadius: 8, alignItems: 'center', justifyContent: 'center' },
+  topRankText: { fontSize: 12, fontWeight: '800' },
+  topDossier: { flex: 1, fontSize: 13, fontWeight: '700', color: C.text },
+  topAmount: { fontSize: 14, fontWeight: '800', color: C.navy },
+
+  // Activity summary
+  activitySummaryRow: {
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: C.surface2, borderRadius: 12,
+    paddingVertical: 14, marginTop: 16,
+  },
+  activityStat: { flex: 1, alignItems: 'center' },
+  activityStatValue: { fontSize: 20, fontWeight: '900', color: C.navy, letterSpacing: -0.5 },
+  activityStatLabel: { fontSize: 9, fontWeight: '700', color: C.muted, textTransform: 'uppercase', letterSpacing: 0.5, marginTop: 2 },
+  activityStatSep: { width: 1, height: 32, backgroundColor: C.border },
 });

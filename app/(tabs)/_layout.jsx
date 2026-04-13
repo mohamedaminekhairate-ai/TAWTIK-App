@@ -1,6 +1,21 @@
 import { Ionicons } from '@expo/vector-icons';
 import { Tabs } from 'expo-router';
-import { useColorScheme, Pressable } from 'react-native';
+import { Image, useColorScheme, Pressable, Text, View } from 'react-native';
+
+function HeaderTitle({ title }) {
+  return (
+    <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+      <Image
+        source={require('../../assets/images/tawtik-logo.png')}
+        style={{ width: 26, height: 26, borderRadius: 6 }}
+        resizeMode="contain"
+      />
+      <Text style={{ fontSize: 17, fontWeight: '700', color: '#1a2e44', letterSpacing: -0.3 }}>
+        {title}
+      </Text>
+    </View>
+  );
+}
 
 export default function TabLayout() {
   const colorScheme = useColorScheme();
@@ -10,27 +25,17 @@ export default function TabLayout() {
       screenOptions={({ navigation }) => ({
         headerLeft: () => (
           <Pressable onPress={() => navigation.toggleDrawer()} style={{ marginLeft: 15 }}>
-            <Ionicons name="menu" size={28} color="#ffffff" />
+            <Ionicons name="menu" size={28} color="#3D6795" />
           </Pressable>
         ),
         headerTitleAlign: 'center',
-        headerStyle: {
-          backgroundColor: '#3D6795',
-        },
-        headerTintColor: '#ffffff',
-        headerTitleStyle: {
-          fontWeight: '700',
-          fontSize: 18,
-        },
-        tabBarActiveTintColor: '#ffffff',
-        tabBarInactiveTintColor: '#cccccc',
-        tabBarStyle: {
-          backgroundColor: '#3D6795',
-        },
-        tabBarLabelStyle: {
-          fontSize: 12,
-          fontWeight: '600',
-        },
+        headerStyle: { backgroundColor: '#ffffff' },
+        headerTintColor: '#3D6795',
+        headerTitle: ({ children }) => <HeaderTitle title={children} />,
+        tabBarActiveTintColor: '#3D6795',
+        tabBarInactiveTintColor: '#94a3b8',
+        tabBarStyle: { backgroundColor: '#ffffff' },
+        tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },
       })}
     >
       <Tabs.Screen

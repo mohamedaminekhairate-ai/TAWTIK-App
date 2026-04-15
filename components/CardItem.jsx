@@ -43,9 +43,9 @@ function getStatusConfig(state) {
 
 // ─── TYPE ACCENT COLORS ─────────────────────────────────────────────────────
 const TYPE_COLORS = {
-  DGI:      { accent: '#3d6795', accentBg: '#ebf0f7', stripColor: '#3d6795' },
-  TGR:      { accent: '#3d6795', accentBg: '#ebf0f7', stripColor: '#3d6795' },
-  DAAMSAKAN:{ accent: '#3d6795', accentBg: '#ebf0f7', stripColor: '#3d6795' },
+  DGI:      { accent: '#407c4f', accentBg: '#EAF2ED', stripColor: '#407c4f' },
+  TGR:      { accent: '#407c4f', accentBg: '#EAF2ED', stripColor: '#407c4f' },
+  DAAMSAKAN:{ accent: '#407c4f', accentBg: '#EAF2ED', stripColor: '#407c4f' },
 };
 
 const CardItem = ({ title, status, details, type }) => {
@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     marginBottom: 12,
     marginHorizontal: 16,
     overflow: 'hidden',
-    shadowColor: '#1a2e44',
+    shadowColor: '#1e3f28',
     shadowOpacity: 0.08,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 4 },
@@ -126,7 +126,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#1a2e44',
+    color: '#1e3f28',
     flex: 1,
     marginRight: 10,
     letterSpacing: -0.3,

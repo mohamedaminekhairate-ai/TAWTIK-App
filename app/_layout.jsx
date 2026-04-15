@@ -13,11 +13,11 @@ function HeaderTitle({ title }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Image
-        source={require('../assets/images/tawtik-logo.png')}
+        source={require('../assets/images/tawtik-logo2.png')}
         style={{ width: 26, height: 26, borderRadius: 6 }}
         resizeMode="contain"
       />
-      <Text style={{ fontSize: 17, fontWeight: '700', color: '#1a2e44', letterSpacing: -0.3 }}>
+      <Text style={{ fontSize: 17, fontWeight: '700', color: '#1e3f28', letterSpacing: -0.3 }}>
         {title}
       </Text>
     </View>
@@ -133,10 +133,10 @@ function AppDrawer() {
         screenOptions={{ 
           headerShown: true,
           headerStyle: { backgroundColor: '#ffffff' },
-          headerTintColor: '#3D6795',
+          headerTintColor: '#407C4F',
           headerTitleStyle: { fontWeight: '700' },
           headerTitle: ({ children }) => <HeaderTitle title={children} />,
-          drawerStyle: { backgroundColor: '#3D6795', width: 280 },
+          drawerStyle: { backgroundColor: '#407C4F', width: 280 },
         }}
       >
         {/* Login screen — hidden from drawer, no header */}

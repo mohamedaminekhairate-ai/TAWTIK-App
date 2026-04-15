@@ -6,11 +6,11 @@ function HeaderTitle({ title }) {
   return (
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
       <Image
-        source={require('../../assets/images/tawtik-logo.png')}
+        source={require('../../assets/images/tawtik-logo2.png')}
         style={{ width: 26, height: 26, borderRadius: 6 }}
         resizeMode="contain"
       />
-      <Text style={{ fontSize: 17, fontWeight: '700', color: '#1a2e44', letterSpacing: -0.3 }}>
+      <Text style={{ fontSize: 17, fontWeight: '700', color: '#1e3f28', letterSpacing: -0.3 }}>
         {title}
       </Text>
     </View>
@@ -25,14 +25,14 @@ export default function TabLayout() {
       screenOptions={({ navigation }) => ({
         headerLeft: () => (
           <Pressable onPress={() => navigation.toggleDrawer()} style={{ marginLeft: 15 }}>
-            <Ionicons name="menu" size={28} color="#3D6795" />
+            <Ionicons name="menu" size={28} color="#407C4F" />
           </Pressable>
         ),
         headerTitleAlign: 'center',
         headerStyle: { backgroundColor: '#ffffff' },
-        headerTintColor: '#3D6795',
+        headerTintColor: '#407C4F',
         headerTitle: ({ children }) => <HeaderTitle title={children} />,
-        tabBarActiveTintColor: '#3D6795',
+        tabBarActiveTintColor: '#407C4F',
         tabBarInactiveTintColor: '#94a3b8',
         tabBarStyle: { backgroundColor: '#ffffff' },
         tabBarLabelStyle: { fontSize: 12, fontWeight: '600' },

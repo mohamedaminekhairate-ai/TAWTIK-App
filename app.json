@@ -2,14 +2,14 @@
   "expo": {
     "name": "TAWTIK",
     "slug": "tawtik",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
-    "icon": "./assets/images/tawtik-logo.png",
+    "icon": "./assets/images/icon-square.png",
     "scheme": "tawtik",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/images/tawtik-logo.png",
+      "image": "./assets/images/icon-square.png",
       "resizeMode": "contain",
       "backgroundColor": "#1a3050"
     },
@@ -17,8 +17,9 @@
       "supportsTablet": true
     },
     "android": {
+      "package": "com.tawtik.notaires",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon-square.png",
         "backgroundColor": "#ffffff"
       },
       "edgeToEdgeEnabled": true,
@@ -34,6 +35,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "f84ef941-8acc-42da-ac13-8ba5e8b9b096"
+      }
     }
   }
 }

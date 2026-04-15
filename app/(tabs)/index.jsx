@@ -21,11 +21,11 @@ import realData from '../../tawtik_api_v2.json';
 
 // ─── PALETTE ───────────────────────────────────────────────────────────────
 const C = {
-  navy: '#1a2e44',
-  navyMid: '#2d4a6e',
-  navyLight: '#3d6795',
-  gold: '#b8922a',
-  goldLight: '#d4a843',
+  navy: '#1e3f28',
+  navyMid: '#2d5638',
+  navyLight: '#407c4f',
+  gold: '#b02e29',
+  goldLight: '#ca3b36',
   success: '#27ae60',
   successBg: '#eafaf1',
   successText: '#1a6a47',
@@ -590,7 +590,7 @@ export default function Dashboard() {
         {/* ── HERO HEADER ── */}
         <Animated.View style={[s.heroHeader, { opacity: headerOpacity }]}>
           <LinearGradient
-            colors={['#1a2e44', '#2d4a6e', '#3d6795']}
+            colors={['#1e3f28', '#2d5638', '#407c4f']}
             style={StyleSheet.absoluteFill}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -631,7 +631,7 @@ export default function Dashboard() {
         {/* ── SYNTHÈSE DES DOSSIERS ── */}
         <AnimatedCard delay={120} pressable style={s.syntheseCard}>
           <LinearGradient
-            colors={['#1a2e44', '#2d4a6e', '#3d6795']}
+            colors={['#1e3f28', '#2d5638', '#407c4f']}
             style={StyleSheet.absoluteFill}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
@@ -724,8 +724,8 @@ export default function Dashboard() {
           name="DGI · Impôts"
           stats={stats.dgi}
           onPress={() => router.push('/dgi')}
-          icon={<Ionicons name="document-text-outline" size={22} color="#3d6795" />}
-          accentColor="#3d6795"
+          icon={<Ionicons name="document-text-outline" size={22} color="#407c4f" />}
+          accentColor="#407c4f"
         />
         <InstBar
           name="TGR · Trésorerie"

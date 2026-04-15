@@ -13,11 +13,11 @@ import { useAuth } from '../../components/AuthContext';
 
 // ─── PALETTE ─────────────────────────────────────────────────────────────────
 const C = {
-  navy: '#1a2e44',
-  navyMid: '#2d4a6e',
-  navyLight: '#3d6795',
-  gold: '#b8922a',
-  goldLight: '#d4a843',
+  navy: '#1e3f28',
+  navyMid: '#2d5638',
+  navyLight: '#407c4f',
+  gold: '#b02e29',
+  goldLight: '#ca3b36',
   goldBg: '#fdf6e3',
   success: '#2a9d6e',
   successBg: '#e8f7f2',
@@ -201,8 +201,8 @@ export default function ProfileScreen() {
 
       {/* ── FOOTER ── */}
       <Animated.View style={[styles.footer, { opacity: logoutAnim }]}>
-        <Text style={styles.footerText}>Conseil National des Notaires du Maroc</Text>
-        <Text style={styles.footerVersion}>v2.1.0</Text>
+        <Text style={styles.footerText}>Conseil National de l'Ordre des Notaires du Maroc</Text>
+        <Text style={styles.footerVersion}>v1</Text>
       </Animated.View>
 
     </ScrollView>
@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     marginBottom: 20,
     alignItems: 'center',
-    shadowColor: '#1a2e44', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
+    shadowColor: '#1e3f28', shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 4 },
     elevation: 4,
   },
   statItem: { flex: 1, alignItems: 'center' },
@@ -306,7 +306,7 @@ const styles = StyleSheet.create({
     borderRadius: 18,
     marginBottom: 20,
     overflow: 'hidden',
-    shadowColor: '#1a2e44', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 3 },
+    shadowColor: '#1e3f28', shadowOpacity: 0.07, shadowRadius: 10, shadowOffset: { width: 0, height: 3 },
     elevation: 3,
   },
   menuRow: {
